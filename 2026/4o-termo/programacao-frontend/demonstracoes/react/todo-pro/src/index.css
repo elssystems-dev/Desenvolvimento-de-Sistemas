@@ -1,0 +1,232 @@
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --code-bg: #1f2028;
+    --accent: #c084fc;
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    --accent-border: rgba(192, 132, 252, 0.5);
+    --social-bg: rgba(47, 48, 58, 0.5);
+    --shadow:
+      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+
+  #social .button-icon {
+    filter: invert(1) brightness(2);
+  }
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  width: 1126px;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  padding-bottom: 1.5rem;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+}
+
+hr {
+  border-radius: 8px;
+  width: 60%;
+  border: 1px solid white;
+}
+
+.tasks-display {
+  background-color: #d7d5d8;
+  width: calc(80% - 2rem);
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  border-radius: 15px;
+  padding: 2rem;
+  color: white;
+  box-shadow: 0px 0px 3px  black;
+  margin-top: 1.5rem;
+}
+
+.action-btn {
+  color: white;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: transform 0.2s ease-in-out;
+}
+
+.add-task {
+  background-color: rgb(44, 134, 44);;
+  padding: 1rem;
+  width: 30%;
+  font-size: 1.5rem;
+}
+
+.add-task:hover {
+  transform: translateY(-5px);
+  font-weight: bold;
+}
+
+.task-btn {
+  width: 80%;
+  height: 20%;
+}
+
+.task-incompleted {
+  background-color: rgb(44, 134, 44);
+}
+
+.task-completed {
+  background-color: rgb(190, 175, 39);
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.task-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.task-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  width: 48.5%;
+  aspect-ratio: 2 / 1;
+  background-color: #545357;
+  border-radius: 15px;
+  margin-bottom: 1rem ;
+  transition: transform 0.3s ease;
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+}
+
+.new-task-form {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.new-task-form input {
+  background-color: #343336;
+  outline: none;
+  border-radius: 15px;
+  color: white;
+  flex: 1;
+  padding: 1rem;
+  font-size: 1.5rem;
+  margin-right: 2rem;
+  border: 1px solid transparent
+}
+
+.new-task-form input:focus {
+  border: 1.5px solid rgb(241, 242, 245)
+}
+
+.new-task-form input::placeholder {
+  color: white;
+}
+
+.concluded-tasks {
+  font-weight: bold;
+  font-size: 1.5rem;
+  -webkit-text-stroke: 1px black;
+  color: transparent;
+  margin-bottom: 1rem;
+}
