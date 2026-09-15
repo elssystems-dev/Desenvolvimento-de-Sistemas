@@ -269,6 +269,7 @@ class _UserConfigState extends State<UserConfig> {
       );
     } else if (type == 'gallery') {
       final ImagePicker picker = ImagePicker();
+      
       try {
         final XFile? image = await picker.pickImage(
           source: ImageSource.gallery,
