@@ -114,5 +114,123 @@ function ExampleComponent(props) {
 }
 ```
 
+### Guia Rápido e Anotações
 
+**Unidade Curricular:** Desenvolvimento Front-end
+**Conteúdo:** Desenvolvimento com Framework - React
 
+#### Semana 1 - Introdução ao React e Ambiente de Desenvolvimento
+
+##### 1. O que é React 
+
+Uma biblioteca Javascript (React.js) para criação de interfaces de usuário (UI)
+
+Funciona de forma **declarativa**: Você descreve o resultado esperado com base nos dados, e o React atualiza o navegador
+
+Cria *SPAs* (Single Page Applications): Atualiza partes da tela sem recarregar a página inteira.
+
+##### 2. React vs Javascript Vanilla: Virtual DOM x Tradicional
+
+O DOM no JS Vanilla é imperativo: Procura a tag, muda o componente e atualiza a página 
+
+React(Declarativo): UI = Componente(dados) -> Quando os dados mudam, o React atualiza o componente.
+
+##### 3. Comandos Essenciais no Terminal
+
+```bash
+# Criar projeto com Vite
+npm create vite@latest <nome_projeto> -- --template react
+
+# Atualizar e instalar dependências do projeto (node_modules)
+npm install 
+
+# Iniciar o servidor local (http:localhost:5173)
+npm run dev
+```
+
+##### 4. Sintaxe do primeiro componente JSX(Javascript com Marcação HTML)
+
+```jsx
+  //src/App.js
+  // COmponente raíz da aplicação
+  function App() {
+    const Sistema = "Meu Site";
+
+    return (
+      <main>
+        <h1>{sistema}</h1>
+        <p>Gerencie seus componentes em um só lugar</p>
+      </main>
+    );
+  }
+
+  export default App
+```
+
+> OBS.: O JSX exige **uma única tag raíz** (ou fragmento <> ... </>) e nome de componentes sempre começam com a letra maiúscula (UpperCamelCase)
+
+#### Semana 2 - JSX, Components, Props e Events
+
+##### 1. Responsabilidade Única (SOLID)
+
+Quebrar a tela em componentes pequenos. Cada componente deve fazer apenas uma única coisa bem feita
+
+**Exemplo de componentes**:
+- `Header`: Cuida do título e do cabeçalho da aplicação
+- `Footer`: Cuida do rodapé da aplicação 
+- `NavBar`: Cuida da barra de navegação do site
+
+> OBS.: O princípio do SOLID estabelece que uma unidade de software deve ter apenas um motivo para mudar
+
+##### 2. Props: Passagem de dados e fluxo unidirecional
+
+**O que são Props**? 
+
+Os props são argumentos ou parâmetros das funções já que um componente React é uma função Javascript, ou seja, as props (abreviação de properties) permitem que o compoentne pai envie dados dinâmicamente para o componente filho, tornando-o customizável e reutilizável
+
+##### 3. Eventos e Comunicação via Callbacks
+
+React encapsulamento de eventos nativos em objetos, a diferença do react para o HTML é a sintaxe
+- no HTML : `onclick="minhaFuncao()"`
+- no React JSX : `onClick={minhaFuncao}`
+
+> Funções em Javascript deve seguir o padrão lowerCamelCase de escrita.
+
+```mermaid
+flowchart LR
+  A[Componente-Pai]
+  B[Compoente-Filho]
+  A --(Passa dados via props)--> B
+  B --(Dispara a ação via callback)--> A
+```
+
+##### 4. Listas Dinâmicas com map() e a propriedade `key`
+
+**Por que arrays são estruturas padrão do front-end?**
+
+Os dados chegam a partir DB e APIs no formato de coleção (JSON)
+
+o método `.map()` percorre cada item de um array e retorna um novo componente JSX
+
+Exemplo:
+
+```jsx
+tarefas.map((e) => (
+    <TarefaItem
+      key={e.id}
+      id={e.id}
+      titulo={e.titulo}
+      descricao={e.descricao}
+      concluido={e.concluido}
+    />
+))
+```
+**Por que o React exige o `key` no uso do .map()?**
+
+O React precisa saber de forma inequívoca qual item específico foi adicionado, alterado ou removido quando renderiza uma lista. Se a chave for omitida, o react emite um aviso no console: `Warning: Each child in a list should have a unique "key" prop.`
+
+> Evitar o índice do array como chave `(key={index})` : índice do vetor não é fixo, use sempre uma chave única para os itens da lista (carimbo de data e hora, id único)
+
+##### Componentes de Formulário Estático
+
+Criando o arquivo `TarefaForm.jsx`
