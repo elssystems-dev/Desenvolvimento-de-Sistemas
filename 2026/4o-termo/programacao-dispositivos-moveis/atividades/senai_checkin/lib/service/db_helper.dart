@@ -4,7 +4,6 @@ import 'package:senai_checkin/service/sql/create_tables.dart';
 import 'package:path/path.dart';
 
 class DbHelper {
-
   // Arquitetura Singleton
   DbHelper._internal();
   static final DbHelper _db = DbHelper._internal();
@@ -29,12 +28,16 @@ class DbHelper {
     );
   }
 
-  Future<<List<UserLogs>>> getLogs() async {
+  Future<List<UserLogs>> getLogs() async {
     final List<Map<String, dynamic>> maps = await (await dbConnector).query(
       "user_logs",
       orderBy: "id DESC"
     );
     return List.generate(maps.length, (e) => UserLogs.fromMap(maps[e]));
+  }
+
+  Future<int> postLogs(UserLogs log) async {
+    return (await dbConnector).insert("user_logs", log.toMap());
   }
 
 }
