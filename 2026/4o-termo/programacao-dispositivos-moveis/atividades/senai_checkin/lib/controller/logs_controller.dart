@@ -9,4 +9,8 @@ class LogsController {
   Future<int> postLogs(UserLogs u) async {
     return await DbHelper().postLogs(u);
   }
+
+  Future<int> deleteLog(int id) async {
+    return await DbHelper().deleteLog(id);
+  }
 }

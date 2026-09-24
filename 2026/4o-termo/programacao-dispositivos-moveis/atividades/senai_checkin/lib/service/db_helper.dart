@@ -40,4 +40,11 @@ class DbHelper {
     return (await dbConnector).insert("user_logs", log.toMap());
   }
 
+  Future<int> deleteLog(int id) async {
+    return (await dbConnector).delete(
+      "user_logs",
+      where: "id = ?",
+      whereArgs: [id],
+    );
+  }
 }
