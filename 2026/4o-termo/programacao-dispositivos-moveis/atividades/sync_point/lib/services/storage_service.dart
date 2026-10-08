@@ -19,6 +19,19 @@ class StorageService {
     return _instance!;
   }
 
+  // --- API Server Base URL ---
+  Future<void> saveApiBaseUrl(String url) async {
+    await _prefs?.setString(AppConstants.keyApiBaseUrl, url.trim());
+  }
+
+  String getApiBaseUrl() {
+    final customUrl = _prefs?.getString(AppConstants.keyApiBaseUrl);
+    if (customUrl != null && customUrl.isNotEmpty) {
+      return customUrl;
+    }
+    return AppConstants.defaultBaseUrl;
+  }
+
   // --- User Session ---
   Future<void> saveUser(UserModel user) async {
     await _prefs?.setString(AppConstants.keySavedUser, user.toJson());

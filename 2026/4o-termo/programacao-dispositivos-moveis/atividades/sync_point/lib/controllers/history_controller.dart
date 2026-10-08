@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/time_record_model.dart';
-import '../services/firestore_service.dart';
+import '../services/record_api_service.dart';
 
 enum HistoryFilter {
   today('Hoje'),
@@ -13,7 +13,7 @@ enum HistoryFilter {
 }
 
 class HistoryController extends ChangeNotifier {
-  final FirestoreService _firestoreService = FirestoreService();
+  final RecordApiService _recordApiService = RecordApiService();
 
   List<TimeRecordModel> _records = [];
   HistoryFilter _currentFilter = HistoryFilter.all;
@@ -37,7 +37,7 @@ class HistoryController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final list = await _firestoreService.getUserTimeRecords(userId);
+      final list = await _recordApiService.getUserTimeRecords(userId);
       _records = list;
     } catch (e) {
       _errorMessage = 'Erro ao carregar histórico: $e';

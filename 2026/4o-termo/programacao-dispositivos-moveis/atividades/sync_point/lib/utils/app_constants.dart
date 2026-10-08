@@ -1,3 +1,6 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 class AppConstants {
   static const String appName = 'SyncPoint';
   static const String appTagline = 'Ponto Eletrônico Inteligente & Seguro';
@@ -6,8 +9,7 @@ class AppConstants {
   // Geofencing Requirement - Max 100 meters
   static const double maxAllowedDistanceMeters = 100.0;
 
-  // Default Headquarters Location (e.g., Corporate Campus / Tech Center)
-  // Latitude & Longitude for default workplace
+  // Default Headquarters Location (Av. Paulista, São Paulo)
   static const String defaultWorkplaceId = 'headquarters-main';
   static const String defaultWorkplaceName = 'Sede Central Corporativa';
   static const String defaultWorkplaceAddress = 'Av. Paulista, 1000 - Bela Vista, São Paulo - SP';
@@ -21,9 +23,22 @@ class AppConstants {
   static const String keyLocalRecords = 'syncpoint_local_records';
   static const String keyCustomWorkplace = 'syncpoint_custom_workplace';
   static const String keyRememberEmailOrNif = 'syncpoint_remember_login';
+  static const String keyApiBaseUrl = 'syncpoint_api_base_url';
 
-  // Firestore Collections
-  static const String collectionUsers = 'users';
-  static const String collectionTimeRecords = 'time_records';
-  static const String collectionWorkplaces = 'workplaces';
+  // REST API Endpoints (json-server / Node.js)
+  static const String defaultAndroidEmulatorUrl = 'http://10.0.2.2:3000';
+  static const String defaultLocalhostUrl = 'http://localhost:3000';
+
+  static String get defaultBaseUrl {
+    if (kIsWeb) return defaultLocalhostUrl;
+    try {
+      if (Platform.isAndroid) return defaultAndroidEmulatorUrl;
+    } catch (_) {}
+    return defaultLocalhostUrl;
+  }
+
+  static const String endpointUsers = '/users';
+  static const String endpointTimeRecords = '/time_records';
+  static const String endpointWorkplaces = '/workplaces';
+  static const String endpointStatus = '/status';
 }

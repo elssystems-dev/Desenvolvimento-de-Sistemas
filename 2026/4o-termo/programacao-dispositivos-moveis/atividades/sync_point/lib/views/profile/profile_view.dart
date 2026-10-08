@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../controllers/auth_controller.dart';
-import '../../services/firebase_service.dart';
+import '../../services/api_service.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import '../../utils/formatters.dart';
@@ -139,9 +139,9 @@ class ProfileView extends StatelessWidget {
                   _buildProfileRow('Cargo Registrado', user.role),
                   _buildProfileRow('Data de Cadastro', Formatters.formatDate(user.createdAt)),
                   _buildProfileRow(
-                    'Status no Firebase',
-                    FirebaseService.isInitialized ? 'Conectado Nuvem' : 'Local / Offline Cache',
-                    badgeColor: FirebaseService.isInitialized ? AppColors.success : AppColors.warning,
+                    'Status Servidor REST',
+                    ApiService.isServerOnline ? 'Conectado (json-server)' : 'Local / Offline Cache',
+                    badgeColor: ApiService.isServerOnline ? AppColors.success : AppColors.warning,
                   ),
                 ],
               ),

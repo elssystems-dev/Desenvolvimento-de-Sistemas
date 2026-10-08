@@ -297,7 +297,7 @@ class _HistoryViewState extends State<HistoryView> {
                       const SizedBox(width: 6),
                       Flexible(
                         child: StatusBadge(
-                          label: item.syncedWithServer ? 'Firebase' : 'Local',
+                          label: item.syncedWithServer ? 'json-server' : 'Local',
                           color: item.syncedWithServer ? AppColors.success : AppColors.warning,
                         ),
                       ),

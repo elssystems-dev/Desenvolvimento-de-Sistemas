@@ -7,13 +7,11 @@ environment:
   sdk: ^3.13.1
 
 dependencies:
-  cloud_firestore: ^6.10.0
   crypto: ^3.0.7
-  firebase_auth: ^6.7.0
-  firebase_core: ^4.15.0
   flutter:
     sdk: flutter
   geolocator: ^14.1.1
+  http: ^1.6.0
   intl: ^0.20.3
   local_auth: ^3.0.2
   shared_preferences: ^2.5.5

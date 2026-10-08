@@ -1,19 +1,17 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 import '../models/user_model.dart';
+import '../utils/app_constants.dart';
 import 'biometric_service.dart';
-import 'firebase_service.dart';
-import 'firestore_service.dart';
+import 'record_api_service.dart';
 import 'storage_service.dart';
 
 class AuthService {
   final BiometricService _biometricService = BiometricService();
-  final FirestoreService _firestoreService = FirestoreService();
+  final RecordApiService _recordApiService = RecordApiService();
   final Uuid _uuid = const Uuid();
-
-  FirebaseAuth? get _auth =>
-      FirebaseService.isInitialized ? FirebaseAuth.instance : null;
 
   /// Helper to convert a NIF (e.g., "123456" or "NIF98765") into a standardized auth email
   static String normalizeLoginToEmail(String login) {
@@ -26,80 +24,93 @@ class AuthService {
     return '$cleanNif@syncpoint.internal';
   }
 
-  /// Sign in with Email or NIF + Password
+  /// Sign in with Email or NIF + Password via json-server REST API
   Future<UserModel> signIn({
     required String emailOrNif,
     required String password,
   }) async {
-    final normalizedEmail = normalizeLoginToEmail(emailOrNif);
     final storage = await StorageService.getInstance();
+    final baseUrl = storage.getApiBaseUrl();
+    final trimmedLogin = emailOrNif.trim();
 
-    if (_auth != null) {
-      try {
-        final UserCredential credential = await _auth!.signInWithEmailAndPassword(
-          email: normalizedEmail,
-          password: password,
-        );
+    try {
+      // 1. Consulta usuário no backend json-server por e-mail ou NIF
+      List<dynamic> usersFound = [];
 
-        final uid = credential.user?.uid ?? '';
-        final profile = await _firestoreService.getUserProfile(uid);
-
-        if (profile != null) {
-          await storage.saveUser(profile);
-          await storage.saveRememberedLogin(emailOrNif);
-          return profile;
-        } else {
-          // If profile does not exist yet in Firestore, create basic profile
-          final newProfile = UserModel(
-            id: uid,
-            nif: emailOrNif.contains('@') ? 'NIF-${uid.substring(0, 6)}' : emailOrNif,
-            name: credential.user?.displayName ?? 'Colaborador',
-            email: credential.user?.email ?? normalizedEmail,
-            role: 'Colaborador',
-            department: 'Tecnologia da Informação',
-            createdAt: DateTime.now(),
-          );
-          await _firestoreService.saveUserProfile(newProfile);
-          await storage.saveUser(newProfile);
-          await storage.saveRememberedLogin(emailOrNif);
-          return newProfile;
+      if (trimmedLogin.contains('@')) {
+        final uri = Uri.parse('$baseUrl${AppConstants.endpointUsers}?email=${Uri.encodeComponent(trimmedLogin.toLowerCase())}');
+        final res = await http.get(uri).timeout(const Duration(seconds: 4));
+        if (res.statusCode == 200) {
+          usersFound = json.decode(res.body);
         }
-      } catch (e) {
-        if (kDebugMode) {
-          print('⚠️ [AuthService] FirebaseAuth login failed ($e). Checking local fallback.');
+      } else {
+        // Tenta buscar por NIF (maiúsculo e como digitado)
+        final uriNif = Uri.parse('$baseUrl${AppConstants.endpointUsers}?nif=${Uri.encodeComponent(trimmedLogin.toUpperCase())}');
+        var res = await http.get(uriNif).timeout(const Duration(seconds: 4));
+        if (res.statusCode == 200) {
+          usersFound = json.decode(res.body);
         }
-        // If Firebase error occurs, throw clean message
-        throw Exception(_formatFirebaseAuthError(e));
+
+        // Se não achou, tenta pelo NIF exato sem alterar case
+        if (usersFound.isEmpty) {
+          final uriRaw = Uri.parse('$baseUrl${AppConstants.endpointUsers}?nif=${Uri.encodeComponent(trimmedLogin)}');
+          res = await http.get(uriRaw).timeout(const Duration(seconds: 4));
+          if (res.statusCode == 200) {
+            usersFound = json.decode(res.body);
+          }
+        }
       }
-    } else {
-      // Local-first / Demo Mode fallback when Firebase credentials are not yet configured
+
+      if (usersFound.isNotEmpty) {
+        final userData = usersFound.first as Map<String, dynamic>;
+
+        // Validação da senha
+        final serverPassword = userData['password']?.toString();
+        if (serverPassword != null && serverPassword.isNotEmpty && serverPassword != password) {
+          throw Exception('Senha incorreta. Verifique suas credenciais.');
+        }
+
+        final user = UserModel.fromMap(userData, userData['id']?.toString());
+        await storage.saveUser(user);
+        await storage.saveRememberedLogin(emailOrNif);
+        if (userData['isBiometricEnabled'] == true) {
+          await storage.setBiometricEnabled(true);
+        }
+
+        if (kDebugMode) {
+          print('✅ [AuthService] Login efetuado com sucesso via json-server: ${user.name}');
+        }
+        return user;
+      } else {
+        throw Exception('Usuário ou NIF não encontrado.');
+      }
+    } catch (e) {
+      final errorMsg = e.toString();
+      if (errorMsg.contains('Senha incorreta') || errorMsg.contains('não encontrado')) {
+        rethrow;
+      }
+
+      if (kDebugMode) {
+        print('⚠️ [AuthService] Falha de conexão com json-server ($e). Verificando cache local.');
+      }
+
+      // Contingência Offline: se o usuário já havia feito login antes neste aparelho
       final savedUser = storage.getUser();
       if (savedUser != null &&
-          (savedUser.email.toLowerCase() == normalizedEmail ||
-              savedUser.nif.toLowerCase() == emailOrNif.toLowerCase())) {
+          (savedUser.email.toLowerCase() == trimmedLogin.toLowerCase() ||
+              savedUser.nif.toLowerCase() == trimmedLogin.toLowerCase())) {
         await storage.saveRememberedLogin(emailOrNif);
         return savedUser;
       }
 
-      // Generate simulated user for quick testing
-      final isNif = !emailOrNif.contains('@');
-      final fallbackUser = UserModel(
-        id: 'user-${_uuid.v4().substring(0, 8)}',
-        nif: isNif ? emailOrNif : 'NIF-883921',
-        name: isNif ? 'Colaborador (NIF $emailOrNif)' : emailOrNif.split('@').first,
-        email: normalizedEmail,
-        role: 'Engenheiro de Software',
-        department: 'Engenharia & Operações',
-        isBiometricEnabled: true,
-        createdAt: DateTime.now(),
+      throw Exception(
+        'Não foi possível conectar ao servidor REST ($baseUrl).\n'
+        'Certifique-se de que o backend json-server está rodando com: npm start na pasta server/',
       );
-      await storage.saveUser(fallbackUser);
-      await storage.saveRememberedLogin(emailOrNif);
-      return fallbackUser;
     }
   }
 
-  /// Register a new employee
+  /// Register a new employee via json-server REST API (POST /users)
   Future<UserModel> register({
     required String name,
     required String nif,
@@ -109,44 +120,82 @@ class AuthService {
     required String role,
     bool enableBiometrics = false,
   }) async {
-    final normalizedEmail = email.contains('@') ? email.trim().toLowerCase() : normalizeLoginToEmail(nif);
     final storage = await StorageService.getInstance();
+    final baseUrl = storage.getApiBaseUrl();
+    final normalizedEmail = email.contains('@') ? email.trim().toLowerCase() : normalizeLoginToEmail(nif);
+    final cleanNif = nif.trim().toUpperCase();
 
-    if (_auth != null) {
-      try {
-        final credential = await _auth!.createUserWithEmailAndPassword(
-          email: normalizedEmail,
-          password: password,
-        );
+    try {
+      // 1. Verifica se NIF ou E-mail já existem no json-server
+      final checkNifUri = Uri.parse('$baseUrl${AppConstants.endpointUsers}?nif=${Uri.encodeComponent(cleanNif)}');
+      final resNif = await http.get(checkNifUri).timeout(const Duration(seconds: 4));
+      if (resNif.statusCode == 200) {
+        final List<dynamic> found = json.decode(resNif.body);
+        if (found.isNotEmpty) {
+          throw Exception('Este NIF já está cadastrado no sistema.');
+        }
+      }
 
-        await credential.user?.updateDisplayName(name);
+      final checkEmailUri = Uri.parse('$baseUrl${AppConstants.endpointUsers}?email=${Uri.encodeComponent(normalizedEmail)}');
+      final resEmail = await http.get(checkEmailUri).timeout(const Duration(seconds: 4));
+      if (resEmail.statusCode == 200) {
+        final List<dynamic> found = json.decode(resEmail.body);
+        if (found.isNotEmpty) {
+          throw Exception('Este e-mail já está cadastrado no sistema.');
+        }
+      }
 
-        final uid = credential.user?.uid ?? _uuid.v4();
-        final newUser = UserModel(
-          id: uid,
-          nif: nif.trim().toUpperCase(),
-          name: name.trim(),
-          email: normalizedEmail,
-          role: role.trim(),
-          department: department.trim(),
-          isBiometricEnabled: enableBiometrics,
-          createdAt: DateTime.now(),
-        );
+      // 2. Cria o novo usuário no servidor
+      final uid = 'usr-${_uuid.v4().substring(0, 8)}';
+      final newUser = UserModel(
+        id: uid,
+        nif: cleanNif,
+        name: name.trim(),
+        email: normalizedEmail,
+        role: role.trim().isNotEmpty ? role.trim() : 'Colaborador',
+        department: department.trim().isNotEmpty ? department.trim() : 'Tecnologia da Informação',
+        isBiometricEnabled: enableBiometrics,
+        createdAt: DateTime.now(),
+      );
 
-        await _firestoreService.saveUserProfile(newUser);
+      final payload = {
+        ...newUser.toMap(),
+        'password': password,
+      };
+
+      final postUri = Uri.parse('$baseUrl${AppConstants.endpointUsers}');
+      final postRes = await http.post(
+        postUri,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(payload),
+      ).timeout(const Duration(seconds: 4));
+
+      if (postRes.statusCode >= 200 && postRes.statusCode < 300) {
         await storage.saveUser(newUser);
         await storage.setBiometricEnabled(enableBiometrics);
-        await storage.saveRememberedLogin(nif.isNotEmpty ? nif : email);
+        await storage.saveRememberedLogin(cleanNif.isNotEmpty ? cleanNif : normalizedEmail);
 
+        if (kDebugMode) {
+          print('✅ [AuthService] Colaborador cadastrado no json-server: ${newUser.name}');
+        }
         return newUser;
-      } catch (e) {
-        throw Exception(_formatFirebaseAuthError(e));
+      } else {
+        throw Exception('Falha ao cadastrar no servidor REST (Status: ${postRes.statusCode}).');
       }
-    } else {
-      // Local fallback registration
+    } catch (e) {
+      final errorMsg = e.toString();
+      if (errorMsg.contains('já está cadastrado')) {
+        rethrow;
+      }
+
+      if (kDebugMode) {
+        print('⚠️ [AuthService] Erro no servidor REST, registrando em contingência local: $e');
+      }
+
+      // Registro local offline de contingência
       final newUser = UserModel(
-        id: 'user-${_uuid.v4().substring(0, 8)}',
-        nif: nif.trim().toUpperCase(),
+        id: 'usr-${_uuid.v4().substring(0, 8)}',
+        nif: cleanNif,
         name: name.trim(),
         email: normalizedEmail,
         role: role.trim().isNotEmpty ? role.trim() : 'Colaborador',
@@ -157,7 +206,7 @@ class AuthService {
 
       await storage.saveUser(newUser);
       await storage.setBiometricEnabled(enableBiometrics);
-      await storage.saveRememberedLogin(nif.isNotEmpty ? nif : email);
+      await storage.saveRememberedLogin(cleanNif.isNotEmpty ? cleanNif : normalizedEmail);
       return newUser;
     }
   }
@@ -184,9 +233,6 @@ class AuthService {
 
   /// Sign out
   Future<void> signOut() async {
-    if (_auth != null) {
-      await _auth!.signOut();
-    }
     final storage = await StorageService.getInstance();
     await storage.clearUser();
   }
@@ -194,31 +240,6 @@ class AuthService {
   /// Get active current user session
   Future<UserModel?> getCurrentUser() async {
     final storage = await StorageService.getInstance();
-    final localUser = storage.getUser();
-    if (localUser != null) return localUser;
-
-    if (_auth != null && _auth!.currentUser != null) {
-      final uid = _auth!.currentUser!.uid;
-      return await _firestoreService.getUserProfile(uid);
-    }
-    return null;
-  }
-
-  String _formatFirebaseAuthError(dynamic error) {
-    final message = error.toString();
-    if (message.contains('user-not-found')) {
-      return 'Usuário ou NIF não encontrado.';
-    } else if (message.contains('wrong-password') || message.contains('invalid-credential')) {
-      return 'Senha incorreta. Verifique suas credenciais.';
-    } else if (message.contains('email-already-in-use')) {
-      return 'Este e-mail ou NIF já está cadastrado no sistema.';
-    } else if (message.contains('weak-password')) {
-      return 'A senha deve conter no mínimo 6 caracteres.';
-    } else if (message.contains('invalid-email')) {
-      return 'Formato de e-mail ou NIF inválido.';
-    } else if (message.contains('network-request-failed')) {
-      return 'Sem conexão com a internet para autenticação no Firebase.';
-    }
-    return 'Erro de autenticação: ${message.replaceAll('Exception: ', '')}';
+    return storage.getUser();
   }
 }

@@ -1,0 +1,21 @@
+{
+  "name": "syncpoint-server",
+  "version": "1.0.0",
+  "description": "Backend Mock REST API com json-server para o aplicativo SyncPoint",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "json-server --watch db.json --port 3000 --host 0.0.0.0"
+  },
+  "keywords": [
+    "json-server",
+    "syncpoint",
+    "flutter",
+    "rest-api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "json-server": "^0.17.4"
+  }
+}

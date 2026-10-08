@@ -5,7 +5,7 @@ import '../models/time_record_model.dart';
 import '../models/user_model.dart';
 import '../models/workplace_model.dart';
 import '../services/biometric_service.dart';
-import '../services/firestore_service.dart';
+import '../services/record_api_service.dart';
 import '../utils/formatters.dart';
 
 class PunchClockResult {
@@ -21,7 +21,7 @@ class PunchClockResult {
 }
 
 class PunchClockController extends ChangeNotifier {
-  final FirestoreService _firestoreService = FirestoreService();
+  final RecordApiService _recordApiService = RecordApiService();
   final BiometricService _biometricService = BiometricService();
   final Uuid _uuid = const Uuid();
 
@@ -124,8 +124,8 @@ class PunchClockController extends ChangeNotifier {
         hashSignature: signature,
       );
 
-      // 4. Save to Firestore & Local Storage
-      final savedRecord = await _firestoreService.recordPunch(record);
+      // 4. Save to json-server & Local Storage
+      final savedRecord = await _recordApiService.recordPunch(record);
       _lastPunchRecorded = savedRecord;
 
       // Automatically advance to the next recommended punch type

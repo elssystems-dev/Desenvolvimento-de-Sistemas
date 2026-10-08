@@ -1,0 +1,72 @@
+{
+  "users": [
+    {
+      "id": "usr-001",
+      "nif": "123456",
+      "name": "Carlos Oliveira",
+      "email": "carlos.oliveira@syncpoint.internal",
+      "password": "123456",
+      "role": "Engenheiro de Software",
+      "department": "Tecnologia da Informação",
+      "isBiometricEnabled": true,
+      "createdAt": "2026-01-15T08:00:00.000Z"
+    },
+    {
+      "id": "usr-002",
+      "nif": "654321",
+      "name": "Mariana Souza",
+      "email": "mariana.souza@syncpoint.internal",
+      "password": "123456",
+      "role": "Analista de RH",
+      "department": "Recursos Humanos",
+      "isBiometricEnabled": false,
+      "createdAt": "2026-02-01T09:00:00.000Z"
+    }
+  ],
+  "workplaces": [
+    {
+      "id": "headquarters-main",
+      "name": "Sede Central Corporativa",
+      "address": "Av. Paulista, 1000 - Bela Vista, São Paulo - SP",
+      "latitude": -23.561684,
+      "longitude": -46.655981,
+      "allowedRadiusMeters": 100.0
+    }
+  ],
+  "time_records": [
+    {
+      "id": "punch-init-001",
+      "userId": "usr-001",
+      "userNif": "123456",
+      "userName": "Carlos Oliveira",
+      "timestamp": "2026-10-06T08:00:00.000Z",
+      "type": "entry",
+      "latitude": -23.561684,
+      "longitude": -46.655981,
+      "workplaceId": "headquarters-main",
+      "workplaceName": "Sede Central Corporativa",
+      "distanceMeters": 12.5,
+      "isWithinRadius": true,
+      "authMethod": "biometricFace",
+      "hashSignature": "9f83c6123456789abcdef0123456789abcdef0123456789abcdef0123456789a",
+      "syncedWithServer": true
+    },
+    {
+      "id": "punch-init-002",
+      "userId": "usr-001",
+      "userNif": "123456",
+      "userName": "Carlos Oliveira",
+      "timestamp": "2026-10-06T12:00:00.000Z",
+      "type": "lunchOut",
+      "latitude": -23.561684,
+      "longitude": -46.655981,
+      "workplaceId": "headquarters-main",
+      "workplaceName": "Sede Central Corporativa",
+      "distanceMeters": 15.2,
+      "isWithinRadius": true,
+      "authMethod": "biometricFace",
+      "hashSignature": "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0",
+      "syncedWithServer": true
+    }
+  ]
+}

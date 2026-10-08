@@ -101,7 +101,7 @@ class RecordDetailDialog extends StatelessWidget {
               ),
               _buildRow(
                 'Sincronização',
-                record.syncedWithServer ? 'Nuvem Firebase' : 'Armazenamento Local',
+                record.syncedWithServer ? 'Servidor REST (json-server)' : 'Armazenamento Local',
                 badgeColor: record.syncedWithServer ? AppColors.secondary : AppColors.warning,
               ),
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'controllers/auth_controller.dart';
-import 'services/firebase_service.dart';
+import 'services/api_service.dart';
 import 'utils/app_constants.dart';
 import 'utils/app_theme.dart';
 import 'views/auth/login_view.dart';
@@ -20,8 +20,8 @@ void main() async {
     ),
   );
 
-  // Initialize Firebase (safely with local fallback)
-  await FirebaseService.initialize();
+  // Initialize REST API connection with json-server (safely with local fallback)
+  await ApiService.initialize();
 
   runApp(const SyncPointApp());
 }

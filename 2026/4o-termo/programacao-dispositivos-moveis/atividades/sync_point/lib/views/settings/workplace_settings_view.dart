@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../controllers/location_controller.dart';
 import '../../controllers/workplace_controller.dart';
 import '../../models/workplace_model.dart';
+import '../../services/api_service.dart';
+import '../../services/storage_service.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import '../../utils/formatters.dart';
@@ -28,6 +30,7 @@ class _WorkplaceSettingsViewState extends State<WorkplaceSettingsView> {
   final _latController = TextEditingController();
   final _lngController = TextEditingController();
   final _radiusController = TextEditingController(text: '100');
+  final _apiUrlController = TextEditingController();
 
   @override
   void initState() {
@@ -42,6 +45,11 @@ class _WorkplaceSettingsViewState extends State<WorkplaceSettingsView> {
     _latController.text = wp.latitude.toString();
     _lngController.text = wp.longitude.toString();
     _radiusController.text = wp.allowedRadiusMeters.toStringAsFixed(0);
+    StorageService.getInstance().then((storage) {
+      if (mounted) {
+        _apiUrlController.text = storage.getApiBaseUrl();
+      }
+    });
   }
 
   @override
@@ -51,6 +59,7 @@ class _WorkplaceSettingsViewState extends State<WorkplaceSettingsView> {
     _latController.dispose();
     _lngController.dispose();
     _radiusController.dispose();
+    _apiUrlController.dispose();
     super.dispose();
   }
 
@@ -137,11 +146,39 @@ class _WorkplaceSettingsViewState extends State<WorkplaceSettingsView> {
     await widget.workplaceController.updateWorkplace(custom);
     await widget.locationController.checkLocation(custom);
 
+    if (_apiUrlController.text.trim().isNotEmpty) {
+      final storage = await StorageService.getInstance();
+      await storage.saveApiBaseUrl(_apiUrlController.text.trim());
+      await ApiService.checkServerConnection();
+    }
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Configurações de geofencing atualizadas com sucesso!'),
+          content: Text('Configurações e URL do servidor salvas com sucesso!'),
           backgroundColor: AppColors.success,
+        ),
+      );
+    }
+  }
+
+  Future<void> _testServerConnection() async {
+    if (_apiUrlController.text.trim().isNotEmpty) {
+      final storage = await StorageService.getInstance();
+      await storage.saveApiBaseUrl(_apiUrlController.text.trim());
+    }
+
+    final isOnline = await ApiService.checkServerConnection();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isOnline
+                ? '✅ Conexão com json-server estabelecida com sucesso!'
+                : '⚠️ Falha na conexão com json-server. Verifique se o servidor está ativo (npm start).',
+          ),
+          backgroundColor: isOnline ? AppColors.success : AppColors.danger,
         ),
       );
     }
@@ -334,9 +371,66 @@ class _WorkplaceSettingsViewState extends State<WorkplaceSettingsView> {
             const SizedBox(height: 24),
 
             CustomButton(
-              text: 'Salvar Configurações',
+              text: 'Salvar Configurações de Perímetro',
               icon: Icons.save_rounded,
               onPressed: _saveCustomSettings,
+            ),
+            const SizedBox(height: 32),
+
+            // Backend REST API (json-server) Configuration
+            const Text(
+              'Backend REST API (Node.js & json-server)',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Configuração da URL base do json-server. No emulador Android, use http://10.0.2.2:3000. No navegador ou desktop, use http://localhost:3000.',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+
+            CustomTextField(
+              controller: _apiUrlController,
+              label: 'URL Base da API REST',
+              hint: 'http://10.0.2.2:3000',
+              prefixIcon: Icons.dns_rounded,
+              keyboardType: TextInputType.url,
+            ),
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                Expanded(
+                  child: CustomButton(
+                    text: 'Testar Conexão',
+                    icon: Icons.wifi_tethering_rounded,
+                    backgroundColor: AppColors.primary,
+                    onPressed: _testServerConnection,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    _apiUrlController.text = AppConstants.defaultAndroidEmulatorUrl;
+                  },
+                  child: const Text('10.0.2.2 (Emulador)', style: TextStyle(fontSize: 12)),
+                ),
+                TextButton(
+                  onPressed: () {
+                    _apiUrlController.text = AppConstants.defaultLocalhostUrl;
+                  },
+                  child: const Text('localhost (PC/Web)', style: TextStyle(fontSize: 12)),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
           ],
