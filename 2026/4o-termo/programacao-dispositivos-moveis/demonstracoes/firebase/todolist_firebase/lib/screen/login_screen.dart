@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:todolist_firebase/screen/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -56,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => RegistroScreen()),
+                  MaterialPageRoute(builder: (context) => RegisterScreen()),
                 );
               },
               child: Text('Não tem uma conta? Registre-se'),

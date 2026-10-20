@@ -5,7 +5,6 @@ import 'package:todolist_firebase/firebase_options.dart';
 import 'package:todolist_firebase/screen/auth_screen.dart';
 
 Future<void> main (List<String> args) async {
-
   // Garantir o carregamento dos widgets do flutter
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -16,6 +15,7 @@ Future<void> main (List<String> args) async {
   );
 
   runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
     home: AuthScreen(),
   ));
 }
