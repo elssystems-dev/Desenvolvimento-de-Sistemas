@@ -1,36 +1,36 @@
-import Header from "./components/Header"
+import { useState } from "react";
+
+import Header from "./components/Header";
 import TarefaForm from "./components/TarefaForm";
 import TarefaItem from "./components/TarefaItem";
 import TarefaList from "./components/TarefaList";
-import { tarefasIniciais } from "./data/tarefaMock";
+import { tarefaInicial } from "./data/tarefaMock";
 
-function App() {
+function App(){
 
-    function handleMudar(id) {
-        console.log("Alterar status da tarefa", id);
-    }
+  const [tarefas, setTarefas] = useState(tarefaInicial);
 
-    function handleRemover(id) {
-        console.log("Remover tarefa", id);
-    }
+  function handleMudar(id){
+    console.log("Alterar Status da Tarefa", id);
+  }
 
-    function handleAdicionar(titulo) {
-        console.log("Adicionar nova tarefa", titulo)
-    }
+  function handleRemover(id){
+    console.log("Remover Tarefa", id);
+  }
 
-    return(
-        <main className="app-container">
-            <Header/>
-            <section className="app-content">
-                <TarefaForm aoAdicionarTarefa={handleAdicionar}/>
-                <TarefaList
-                    tarefas={tarefasIniciais}
-                    aoMudarTarefa={handleMudar}
-                    aoRemoverTarefa={handleRemover}
-                />
-            </section>
-        </main>
-    );
+  function handleAdicionar(titulo){
+    console.log("Adicionar nova tarefa",titulo);
+  }
+
+
+  return(
+    <main className="app-container">
+      <Header/>
+      <TarefaForm/>
+      <p className="tarefa-contador">Tarefas Cadastradas: {tarefas.length}</p>
+      <TarefaList tarefas={tarefas} />
+    </main>
+  );
 }
 
 export default App;

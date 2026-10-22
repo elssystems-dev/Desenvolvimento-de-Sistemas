@@ -1,24 +1,42 @@
-// Formulário de cadastro de novas tarefas com semântica de acessibilidade
+//Formulário de cadastro de nova tarefas com semantica de acessibilidade
 
-function TarefaForm({aoAdicionarTarefa}){
+import { useState } from "react";
+
+function TarefaForm({ aoAddTarefa }) {
+
+    // adicionando os useState
+    const [titulo, setTitulo] = useState("");
+    const [error, setError] = useState("");
+
+
     function handleSubmit(e){
         e.preventDefault();
-        // Simular a criação de tarefa
-        aoAdicionarTarefa("Nova tarefa adicionada!")
+
+        //verificar se o título da tarefa é válido
+        if(titulo.trim().length < 4){
+            setError("O títlo da tarefa deve ter pelo menos 4 caracteres");
+            return;
+        }
+
+        //Simular a criação de Tarefa
+        aoAddTarefa(titulo.trim());// adiciona o titulo a função de callback 
+        setError("");//limpa os campos de erro e titulo
+        setTitulo("");
     }
 
     return(
         <form className="tarefa-form" onSubmit={handleSubmit}>
-            <label htmlFor="tarefa-titulo">Título</label>
-            <div className="input-group">
+            <div className="form-group">
                 <input 
-                    id="tarefa-titulo"
-                    type="text"
-                    placeholder="Ex.: Revisar documentação"
-                    required
+                    type="text" 
+                    placeholder="Digite o título da Tarefa"
+                    value = {titulo}
+                    onChange={(e) => setTitulo(e.target.value)} 
                 />
-                <button type="submit" className="btn-primario">Adicionar</button>
+                <button type="submit" className="btn-add">Adicionar</button>
             </div>
+            {error && <p className="error-message">{error}</p>}
+            
         </form>
     );
 }
