@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "807079862218",
+    "project_id": "star-phrases",
+    "storage_bucket": "star-phrases.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:807079862218:android:d7b10db8b7104ce9593933",
+        "android_client_info": {
+          "package_name": "com.example.star_phrases"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-1P-qH5gcfW0TeYEA9d7oP_dqbxSCbXg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
