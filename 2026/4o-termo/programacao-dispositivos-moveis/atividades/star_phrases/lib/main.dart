@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:star_phrases/firebase_options.dart';
 
-void main() {
-  runApp(const MainApp());
-}
+import 'package:star_phrases/screens/phrases.dart';
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+Future<void> main(List<String> args) async {
 
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
-    );
-  }
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform
+  );
+
+  runApp(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Phrases(),
+    )
+  );
 }
